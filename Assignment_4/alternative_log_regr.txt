@@ -1,0 +1,65 @@
+def augmentInput(X):
+    # Take the input matrix and return a matrix that has 
+    """ Taking the original independent variables matrix and add a row of 1 which corresponds to x_0
+        Parameters:
+          X:  independent variables matrix
+        Return value: the matrix that contains all the values in the dataset, not include the outcomes variables. 
+    """    
+    vectorX = np.c_[np.ones((len(X), 1)), X]
+    return vectorX
+
+def theta_init(X):
+    """ Generate an initial value of vector θ from the original independent variables matrix
+         Parameters:
+          X:  independent variables matrix
+        Return value: a vector of theta filled with initial guess
+    """
+    theta = np.random.randn(len(X[0])+1, 1)
+    return theta
+
+
+def sigmoid_function(X):
+    """ Calculate the sigmoid value of the inputs
+         Parameters:
+          X:  values
+        Return value: the sigmoid value
+    """
+    return 1/(1+np.exp(-X))
+
+def Logistics_Regression(X,y,learningrate, iterations):
+    """ Find the Logistics regression model for the data set
+         Parameters:
+          X: independent variables matrix
+          y: dependent variables matrix
+          learningrate: learningrate of Gradient Descent
+          iterations: the number of iterations
+        Return value: the final theta vector and the plot of cost function
+    """
+    y_new = np.reshape(y, (len(y), 1))   
+    loss_lst = []
+    vectorX = generateXvector(X)
+    theta = theta_init(X)
+    m = len(X)
+    for i in range(iterations):
+        gradients = 2/m * vectorX.T.dot(sigmoid_function(vectorX.dot(theta)) - y_new)
+        theta = theta - learningrate * gradients
+        y_pred = sigmoid_function(vectorX.dot(theta))
+        # Calculate the loss for each training instance
+        loss = - np.sum(np.dot(y_new.T,np.log(y_pred))+ np.dot((1-y_new).T,np.log(1-y_pred))) /(len(y_pred))
+        loss_lst.append(loss)
+    plt.plot(np.arange(1,iterations),loss_lst[1:], color = 'red')
+    plt.title('Loss Graph')
+    plt.xlabel('Number of iterations')
+    plt.ylabel('Cost')
+    return theta
+
+weights = Logistics_Regression(X_train, Y_train, 0.01, 100)
+
+acc = 0
+preds = sigmoid_function(generateXvector(X_test).dot(weights))
+preds = preds.flatten()
+
+for i in range(len(preds)):
+    if preds[i] > 0.5 and Y_test[i] == 1 or preds[i] <= 0.5 and Y_test[i] == 0:
+        acc += 1
+print(acc/len(Y_test))
